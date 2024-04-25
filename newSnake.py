@@ -13,7 +13,7 @@ apple_position = None
 hurdles = []
 
 # Define the number of hurdles
-num_hurdles = 5
+num_hurdles = 7
 
 # Initialize flag for game state
 game_over = False
