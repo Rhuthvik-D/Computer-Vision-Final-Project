@@ -44,7 +44,7 @@ def generate_positions(frame):
 # Function to check if the snake's head collides with any hurdles
 def check_collision(snake_head, hurdles):
     for hurdle in hurdles:
-        if dist(snake_head, hurdle) < 10:
+        if dist(snake_head, hurdle) < 5:
             return True
     return False
 
@@ -54,7 +54,7 @@ cap = cv2.VideoCapture(0)
 # Snake game loop
 while True:
     ret, frame = cap.read()
-    frame = imutils.resize(frame, width=600)
+    frame = imutils.resize(frame, width=1000)
     img = cv2.GaussianBlur(frame, (11, 11), 0)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     
