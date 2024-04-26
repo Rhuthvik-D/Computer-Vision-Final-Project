@@ -14,6 +14,10 @@ apple_x = None
 apple_y = None
 center = None
 
+# Load hurdle image
+hurdle_image = cv2.imread('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
+hurdle_image = cv2.resize(hurdle_image, (20, 20))  # Resize the image to match the desired size
+
 # Define hurdle positions
 hurdles = [(100, 200), (300, 400), (500, 300)]
 
@@ -37,8 +41,10 @@ while 1:
     cv2.circle(frame, (apple_x, apple_y), 3, (0, 0, 255), -1)
 
     # Display hurdles
-    for hurdle in hurdles:
-        cv2.circle(frame, hurdle, 5, (0, 255, 255), -1)
+    for hurdle_pos in hurdles:
+        # Draw hurdle image at hurdle position
+        hurdle_x, hurdle_y = hurdle_pos
+        frame[hurdle_y:hurdle_y + hurdle_image.shape[0], hurdle_x:hurdle_x + hurdle_image.shape[1]] = hurdle_image
 
     # change this range according to your need
     greenLower = (29, 86, 18)
@@ -93,8 +99,8 @@ while 1:
         break
 
     # Check collision with hurdles
-    for hurdle in hurdles:
-        if center is not None and dist(center, hurdle) < 5:
+    for hurdle_pos in hurdles:
+        if center is not None and dist(center, hurdle_pos) < 5:
             flag = -1
             break
 
