@@ -100,7 +100,7 @@ while 1:
 
     # Check collision with hurdles
     for hurdle_pos in hurdles:
-        if center is not None and dist(center, hurdle_pos) < 5:
+        if center is not None and dist(center, hurdle_pos) < 15:
             flag = -1
             break
 
