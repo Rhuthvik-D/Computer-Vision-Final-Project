@@ -15,14 +15,18 @@ apple_y = None
 center = None
 hurdles = []
 
-# Load hurdle image
-hurdle_image = cv2.imread('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
-hurdle_image = cv2.resize(hurdle_image, (20, 20))  # Resize the image to match the desired size
 
-num_hurdles = 4
+#Defining functions to read hurdle image
+def read_image(path):
+    original_image = cv2.imread(path)
+    resized_image = cv2.resize(original_image, (20, 20))
+    return resized_image
+
+
 # Define hurdle positions
 # Function to generate random apple and hurdle positions
 def generate_hurdles(frame):
+    num_hurdles = 4
     global hurdles
     if not hurdles:
         # Generate random hurdle positions
@@ -31,6 +35,10 @@ def generate_hurdles(frame):
 # distance function
 def dist(pt1, pt2):
     return np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
+
+# Load hurdle image
+hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
+
 
 cap = cv2.VideoCapture(0)
 
