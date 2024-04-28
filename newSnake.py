@@ -2,10 +2,14 @@ import cv2
 import imutils
 import numpy as np
 
+import tkinter as tk 
+from tkinter import * 
+from tkinter import messagebox as mb 
+
 # Snake game in Python
 
 score = 0
-max_score = 20
+max_score = 1
 list_capacity = 0
 max_lc = 20
 l = []
@@ -41,6 +45,8 @@ hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Pro
 
 
 cap = cv2.VideoCapture(0)
+
+res = 'no'
 
 while 1:
     ret, frame = cap.read()
@@ -113,8 +119,22 @@ while 1:
     if flag == 1:
         cv2.putText(frame, 'YOU WIN !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 0), 3)
         cv2.imshow('live feed', frame)
-        cv2.waitKey(2000)  # Delay before closing the window
-        break
+        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        if res == 'yes' : 
+            cv2.waitKey(2000) 
+            break     
+        else : 
+            score = 0
+            list_capacity = 0
+            max_lc = 20
+            l = []
+            flag = 0
+            center = None
+            res = 'no'
+            continue
+            #mb.showinfo('Return', 'Returning to main application') 
+            # Delay before closing the window
+        
 
     # Check collision with hurdles
     for hurdle_pos in hurdles:
@@ -126,11 +146,23 @@ while 1:
     if flag == -1:
         cv2.putText(frame, 'GAME OVER !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3)
         cv2.imshow('live feed', frame)
-        cv2.waitKey(2000)  # Delay before closing the window
-        break
+        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        if res == 'yes' : 
+            cv2.waitKey(2000) 
+            break     
+        else : 
+            score = 0
+            list_capacity = 0
+            max_lc = 20
+            l = []
+            flag = 0
+            center = None
+            res = 'no'
+            continue
 
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
+
     prev_c = center
 
     if cv2.waitKey(1) == 27:
