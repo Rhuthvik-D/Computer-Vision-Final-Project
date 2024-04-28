@@ -1,6 +1,7 @@
 import cv2
 import imutils
 import numpy as np
+import math		   
 
 import tkinter as tk 
 from tkinter import * 
@@ -9,7 +10,7 @@ from tkinter import messagebox as mb
 # Snake game in Python
 
 score = 0
-max_score = 3
+max_score = 1
 list_capacity = 0
 max_lc = 20
 l = []
@@ -40,21 +41,100 @@ def generate_hurdles(frame):
 def dist(pt1, pt2):
     return np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
 
+
+
+def calculate_moments(contour):
+    # Calculate moments manually
+    M = {}
+    M['m00'] = len(contour)
+    m10 = 0
+    m01 = 0
+    for point in contour:
+        x, y = point[0]
+        m10 += x
+        m01 += y
+    M['m10'] = m10
+    M['m01'] = m01
+    # Check for divide by zero error
+    if M['m00'] == 0:
+        M['m00'] = 1
+    # Calculate centroid
+    centroid_x = int(M['m10'] / M['m00'])
+    centroid_y = int(M['m01'] / M['m00'])
+    return M, (centroid_x, centroid_y)
+
+
+import numpy as np
+								   
+											  
+
+def erode(mask, kernel_size=(3,3), iterations=1):
+    kernel = np.ones(kernel_size, np.uint8)
+    eroded_mask = mask.copy()
+    for _ in range(iterations):
+        eroded_mask = np.minimum.reduce([eroded_mask[i:mask.shape[0]-kernel_size[0]+i+1, j:mask.shape[1]-kernel_size[1]+j+1] for i in range(kernel_size[0]) for j in range(kernel_size[1])])
+    return eroded_mask
+
+																						
+def convolution(f, I):
+    filter_ht, filter_wdt = f.shape
+    image_ht, image_wdt, image_depth = I.shape
+
+    pad_ht = filter_ht // 2
+    pad_wdt = filter_wdt // 2
+    pad_img = np.pad(I, ((pad_ht, pad_ht), (pad_wdt, pad_wdt), (0, 0)), mode='constant')
+
+    im_conv = np.zeros_like(I, dtype=float)
+
+    for i in range(image_ht):
+        for j in range(image_wdt):
+            for k in range(image_depth):
+                roi = pad_img[i:i+filter_ht, j:j+filter_wdt, k]
+                im_conv[i, j, k] = np.sum(roi * f)
+    return im_conv
+
+def gaussian_filter(sigma, filter_size):
+    # Ensure filter size is odd
+    filter_size = filter_size + 1 if filter_size % 2 == 0 else filter_size
+
+    # Calculate range of values
+    x = np.arange(-filter_size // 2, filter_size // 2 + 1)
+
+    # Calculate Gaussian kernel
+    kernel = np.exp(-0.5 * (x / sigma) ** 2) / (sigma * math.sqrt(2 * math.pi))
+    kernel /= np.sum(kernel)
+
+    return kernel											 
+		
 # Load hurdle image
 hurdle_image = read_image('hurdle_image.png')  # Provide the path to your hurdle image
 
-
 cap = cv2.VideoCapture(0)
-# cap.set(3, 1280)
-# cap.set(4, 720)
-
-
+				  				
 res = 'no'
 
 while 1:
     ret, frame = cap.read()
+		  					   
     img = imutils.resize(frame.copy(), width=600)
     img = cv2.GaussianBlur(img, (11, 11), 0)
+	
+	#cannot add manual gaussian blur as it takes more time to process each frame and filter it. Though, the trials for it are mentioned below.
+    '''# img = gaussian_blur(img, 11, 1)
+    sigma = 1
+    filter_size = 11
+    gaussian_kernel = gaussian_filter(sigma, filter_size)
+    gaussian_kernel = gaussian_kernel.reshape(-1,1)
+    # if isinstance(gaussian_kernel, np.ndarray):
+    #     print("yes")
+    # else:
+    #     print("no")
+    # # print("gaussian_kernel", gaussian_kernel.dtype)
+    img = convolution(gaussian_kernel, img)
+    #print("image shape", img.shape)
+    img = img.astype(np.uint8)
+    # img_x = gaussian_blur(img, 11, 1)'''																																									  
+										  
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Generate random apple and hurdle positions if needed
@@ -78,8 +158,10 @@ while 1:
     greenUpper = (93, 255, 255)
 
     # masking out the green color
-    mask = cv2.inRange(img, greenLower, greenUpper)
-    mask = cv2.erode(mask, None, iterations=2)
+    mask = (np.logical_and(np.all(img >= greenLower, axis = -1), np.all(img <= greenUpper, axis = -1))).astype(np.uint8) * 255
+    # mask = cv2.inRange(img, greenLower, greenUpper)
+    mask = erode(mask)
+    #mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
 
     # find contours
@@ -90,8 +172,10 @@ while 1:
         ball_cont = max(cnts, key=cv2.contourArea)
         (x, y), radius = cv2.minEnclosingCircle(ball_cont)
 
-        M = cv2.moments(ball_cont)
-        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+        M, center = calculate_moments(ball_cont)
+        
+        #M = cv2.moments(ball_cont)
+        #center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
 
         if radius > 10:
             cv2.circle(frame, center, 2, (0, 0, 255), 3)
@@ -124,6 +208,9 @@ while 1:
         cv2.imshow('live feed', frame)
         res = mb.askquestion('Exit Application', 'Retry?')       
         if res == 'yes' : 
+							  
+					  
+			   
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -152,6 +239,9 @@ while 1:
         cv2.imshow('live feed', frame)
         res = mb.askquestion('Exit Application', 'Retry?')       
         if res == 'yes' : 
+							  
+					  
+			   
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -163,6 +253,9 @@ while 1:
         else : 
             cv2.waitKey(1000) 
             break
+			   
+							  
+				 
 
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
