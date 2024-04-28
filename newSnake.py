@@ -9,7 +9,7 @@ from tkinter import messagebox as mb
 # Snake game in Python
 
 score = 0
-max_score = 3
+max_score = 1
 list_capacity = 0
 max_lc = 20
 l = []
@@ -40,14 +40,39 @@ def generate_hurdles(frame):
 def dist(pt1, pt2):
     return np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
 
+
+
+def calculate_moments(contour):
+    # Calculate moments manually
+    M = {}
+    M['m00'] = len(contour)
+    m10 = 0
+    m01 = 0
+    for point in contour:
+        x, y = point[0]
+        m10 += x
+        m01 += y
+    M['m10'] = m10
+    M['m01'] = m01
+    # Check for divide by zero error
+    if M['m00'] == 0:
+        M['m00'] = 1
+    # Calculate centroid
+    centroid_x = int(M['m10'] / M['m00'])
+    centroid_y = int(M['m01'] / M['m00'])
+    return M, (centroid_x, centroid_y)
+
+
+
+
+
+
+
 # Load hurdle image
-hurdle_image = read_image('hurdle_image.png')  # Provide the path to your hurdle image
+hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
 
 
 cap = cv2.VideoCapture(0)
-# cap.set(3, 1280)
-# cap.set(4, 720)
-
 
 res = 'no'
 
@@ -90,8 +115,10 @@ while 1:
         ball_cont = max(cnts, key=cv2.contourArea)
         (x, y), radius = cv2.minEnclosingCircle(ball_cont)
 
-        M = cv2.moments(ball_cont)
-        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+        M, center = calculate_moments(ball_cont)
+        
+        #M = cv2.moments(ball_cont)
+        #center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
 
         if radius > 10:
             cv2.circle(frame, center, 2, (0, 0, 255), 3)
@@ -122,8 +149,11 @@ while 1:
     if flag == 1:
         cv2.putText(frame, 'YOU WIN !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 0), 3)
         cv2.imshow('live feed', frame)
-        res = mb.askquestion('Exit Application', 'Retry?')       
+        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
         if res == 'yes' : 
+            cv2.waitKey(2000) 
+            break     
+        else : 
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -132,10 +162,6 @@ while 1:
             center = None
             res = 'no'
             continue
-              
-        else : 
-            cv2.waitKey(1000) 
-            break
             #mb.showinfo('Return', 'Returning to main application') 
             # Delay before closing the window
         
@@ -150,8 +176,11 @@ while 1:
     if flag == -1:
         cv2.putText(frame, 'GAME OVER !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3)
         cv2.imshow('live feed', frame)
-        res = mb.askquestion('Exit Application', 'Retry?')       
+        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
         if res == 'yes' : 
+            cv2.waitKey(2000) 
+            break     
+        else : 
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -159,10 +188,7 @@ while 1:
             flag = 0
             center = None
             res = 'no'
-            continue   
-        else : 
-            cv2.waitKey(1000) 
-            break
+            continue
 
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
