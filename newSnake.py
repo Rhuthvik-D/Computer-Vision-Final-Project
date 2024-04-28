@@ -9,7 +9,7 @@ from tkinter import messagebox as mb
 # Snake game in Python
 
 score = 0
-max_score = 1
+max_score = 3
 list_capacity = 0
 max_lc = 20
 l = []
@@ -45,8 +45,8 @@ hurdle_image = read_image('hurdle_image.png')  # Provide the path to your hurdle
 
 
 cap = cv2.VideoCapture(0)
-cap.set(3, 1280)
-cap.set(4, 720)
+# cap.set(3, 1280)
+# cap.set(4, 720)
 
 
 res = 'no'
@@ -122,11 +122,8 @@ while 1:
     if flag == 1:
         cv2.putText(frame, 'YOU WIN !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 0), 3)
         cv2.imshow('live feed', frame)
-        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        res = mb.askquestion('Exit Application', 'Retry?')       
         if res == 'yes' : 
-            cv2.waitKey(2000) 
-            break     
-        else : 
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -135,6 +132,10 @@ while 1:
             center = None
             res = 'no'
             continue
+              
+        else : 
+            cv2.waitKey(1000) 
+            break
             #mb.showinfo('Return', 'Returning to main application') 
             # Delay before closing the window
         
@@ -149,11 +150,8 @@ while 1:
     if flag == -1:
         cv2.putText(frame, 'GAME OVER !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3)
         cv2.imshow('live feed', frame)
-        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        res = mb.askquestion('Exit Application', 'Retry?')       
         if res == 'yes' : 
-            cv2.waitKey(2000) 
-            break     
-        else : 
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -161,7 +159,10 @@ while 1:
             flag = 0
             center = None
             res = 'no'
-            continue
+            continue   
+        else : 
+            cv2.waitKey(1000) 
+            break
 
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
