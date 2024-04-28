@@ -41,7 +41,7 @@ def dist(pt1, pt2):
     return np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
 
 # Load hurdle image
-hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
+hurdle_image = read_image('hurdle_image.png')  # Provide the path to your hurdle image
 
 
 cap = cv2.VideoCapture(0)
