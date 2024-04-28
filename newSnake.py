@@ -1,6 +1,7 @@
 import cv2
 import imutils
 import numpy as np
+import math		   
 
 import tkinter as tk 
 from tkinter import * 
@@ -64,6 +65,8 @@ def calculate_moments(contour):
 
 
 import numpy as np
+								   
+											  
 
 def erode(mask, kernel_size=(3,3), iterations=1):
     kernel = np.ones(kernel_size, np.uint8)
@@ -72,24 +75,66 @@ def erode(mask, kernel_size=(3,3), iterations=1):
         eroded_mask = np.minimum.reduce([eroded_mask[i:mask.shape[0]-kernel_size[0]+i+1, j:mask.shape[1]-kernel_size[1]+j+1] for i in range(kernel_size[0]) for j in range(kernel_size[1])])
     return eroded_mask
 
+																						
+def convolution(f, I):
+    filter_ht, filter_wdt = f.shape
+    image_ht, image_wdt, image_depth = I.shape
 
+    pad_ht = filter_ht // 2
+    pad_wdt = filter_wdt // 2
+    pad_img = np.pad(I, ((pad_ht, pad_ht), (pad_wdt, pad_wdt), (0, 0)), mode='constant')
 
+    im_conv = np.zeros_like(I, dtype=float)
 
+    for i in range(image_ht):
+        for j in range(image_wdt):
+            for k in range(image_depth):
+                roi = pad_img[i:i+filter_ht, j:j+filter_wdt, k]
+                im_conv[i, j, k] = np.sum(roi * f)
+    return im_conv
 
+def gaussian_filter(sigma, filter_size):
+    # Ensure filter size is odd
+    filter_size = filter_size + 1 if filter_size % 2 == 0 else filter_size
 
+    # Calculate range of values
+    x = np.arange(-filter_size // 2, filter_size // 2 + 1)
 
+    # Calculate Gaussian kernel
+    kernel = np.exp(-0.5 * (x / sigma) ** 2) / (sigma * math.sqrt(2 * math.pi))
+    kernel /= np.sum(kernel)
+
+    return kernel											 
+		
 # Load hurdle image
 hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
 
-
 cap = cv2.VideoCapture(0)
-
+				  				
 res = 'no'
 
 while 1:
     ret, frame = cap.read()
+		  					   
     img = imutils.resize(frame.copy(), width=600)
     img = cv2.GaussianBlur(img, (11, 11), 0)
+	
+	#cannot add manual gaussian blur as it takes more time to process each frame and filter it. Though, the trials for it are mentioned below.
+    '''# img = gaussian_blur(img, 11, 1)
+    sigma = 1
+    filter_size = 11
+    gaussian_kernel = gaussian_filter(sigma, filter_size)
+    gaussian_kernel = gaussian_kernel.reshape(-1,1)
+    # if isinstance(gaussian_kernel, np.ndarray):
+    #     print("yes")
+    # else:
+    #     print("no")
+    # # print("gaussian_kernel", gaussian_kernel.dtype)
+    img = convolution(gaussian_kernel, img)
+    #print("image shape", img.shape)
+    img = img.astype(np.uint8)
+    # img_x = gaussian_blur(img, 11, 1)'''																																									  
+										  
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Generate random apple and hurdle positions if needed
@@ -160,11 +205,11 @@ while 1:
     if flag == 1:
         cv2.putText(frame, 'YOU WIN !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 0), 3)
         cv2.imshow('live feed', frame)
-        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        res = mb.askquestion('Exit Application', 'Retry?')       
         if res == 'yes' : 
-            cv2.waitKey(2000) 
-            break     
-        else : 
+							  
+					  
+			   
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -173,6 +218,10 @@ while 1:
             center = None
             res = 'no'
             continue
+              
+        else : 
+            cv2.waitKey(1000) 
+            break
             #mb.showinfo('Return', 'Returning to main application') 
             # Delay before closing the window
         
@@ -187,11 +236,11 @@ while 1:
     if flag == -1:
         cv2.putText(frame, 'GAME OVER !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3)
         cv2.imshow('live feed', frame)
-        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        res = mb.askquestion('Exit Application', 'Retry?')       
         if res == 'yes' : 
-            cv2.waitKey(2000) 
-            break     
-        else : 
+							  
+					  
+			   
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -199,7 +248,13 @@ while 1:
             flag = 0
             center = None
             res = 'no'
-            continue
+            continue   
+        else : 
+            cv2.waitKey(1000) 
+            break
+			   
+							  
+				 
 
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
