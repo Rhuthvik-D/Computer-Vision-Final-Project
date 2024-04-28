@@ -45,6 +45,9 @@ hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Pro
 
 
 cap = cv2.VideoCapture(0)
+cap.set(3, 1280)
+cap.set(4, 720)
+
 
 res = 'no'
 
