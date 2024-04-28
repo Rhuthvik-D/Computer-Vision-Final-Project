@@ -63,6 +63,16 @@ def calculate_moments(contour):
     return M, (centroid_x, centroid_y)
 
 
+import numpy as np
+
+def erode(mask, kernel_size=(3,3), iterations=1):
+    kernel = np.ones(kernel_size, np.uint8)
+    eroded_mask = mask.copy()
+    for _ in range(iterations):
+        eroded_mask = np.minimum.reduce([eroded_mask[i:mask.shape[0]-kernel_size[0]+i+1, j:mask.shape[1]-kernel_size[1]+j+1] for i in range(kernel_size[0]) for j in range(kernel_size[1])])
+    return eroded_mask
+
+
 
 
 
@@ -104,7 +114,8 @@ while 1:
 
     # masking out the green color
     mask = cv2.inRange(img, greenLower, greenUpper)
-    mask = cv2.erode(mask, None, iterations=2)
+    mask = erode(mask)
+    #mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
 
     # find contours
