@@ -2,10 +2,14 @@ import cv2
 import imutils
 import numpy as np
 
+import tkinter as tk 
+from tkinter import * 
+from tkinter import messagebox as mb 
+
 # Snake game in Python
 
 score = 0
-max_score = 20
+max_score = 1
 list_capacity = 0
 max_lc = 20
 l = []
@@ -13,25 +17,45 @@ flag = 0
 apple_x = None
 apple_y = None
 center = None
+hurdles = []
 
-# Load hurdle image
-hurdle_image = cv2.imread('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
-hurdle_image = cv2.resize(hurdle_image, (20, 20))  # Resize the image to match the desired size
+
+#Defining functions to read hurdle image
+def read_image(path):
+    original_image = cv2.imread(path)
+    resized_image = cv2.resize(original_image, (20, 20))
+    return resized_image
+
 
 # Define hurdle positions
-hurdles = [(100, 200), (300, 400), (500, 300)]
+# Function to generate random apple and hurdle positions
+def generate_hurdles(frame):
+    num_hurdles = 4
+    global hurdles
+    if not hurdles:
+        # Generate random hurdle positions
+        hurdles = [(np.random.randint(30, frame.shape[1] - 30), np.random.randint(30, frame.shape[0] - 30)) for _ in range(num_hurdles)]
 
 # distance function
 def dist(pt1, pt2):
     return np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
 
+# Load hurdle image
+hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
+
+
 cap = cv2.VideoCapture(0)
+
+res = 'no'
 
 while 1:
     ret, frame = cap.read()
     img = imutils.resize(frame.copy(), width=600)
     img = cv2.GaussianBlur(img, (11, 11), 0)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    # Generate random apple and hurdle positions if needed
+    generate_hurdles(frame)
 
     if apple_x is None or apple_y is None:
         # assigning random coefficients for apple coordinates
@@ -95,12 +119,26 @@ while 1:
     if flag == 1:
         cv2.putText(frame, 'YOU WIN !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 0), 3)
         cv2.imshow('live feed', frame)
-        cv2.waitKey(2000)  # Delay before closing the window
-        break
+        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        if res == 'yes' : 
+            cv2.waitKey(2000) 
+            break     
+        else : 
+            score = 0
+            list_capacity = 0
+            max_lc = 20
+            l = []
+            flag = 0
+            center = None
+            res = 'no'
+            continue
+            #mb.showinfo('Return', 'Returning to main application') 
+            # Delay before closing the window
+        
 
     # Check collision with hurdles
     for hurdle_pos in hurdles:
-        if center is not None and dist(center, hurdle_pos) < 5:
+        if center is not None and dist(center, hurdle_pos) < 15:
             flag = -1
             break
 
@@ -108,11 +146,23 @@ while 1:
     if flag == -1:
         cv2.putText(frame, 'GAME OVER !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3)
         cv2.imshow('live feed', frame)
-        cv2.waitKey(2000)  # Delay before closing the window
-        break
+        res = mb.askquestion('Exit Application', 'Do you really want to exit')       
+        if res == 'yes' : 
+            cv2.waitKey(2000) 
+            break     
+        else : 
+            score = 0
+            list_capacity = 0
+            max_lc = 20
+            l = []
+            flag = 0
+            center = None
+            res = 'no'
+            continue
 
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
+
     prev_c = center
 
     if cv2.waitKey(1) == 27:
