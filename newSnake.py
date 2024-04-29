@@ -31,8 +31,9 @@ def read_image(path):
 # Define hurdle positions
 # Function to generate random apple and hurdle positions
 def generate_hurdles(frame):
-    num_hurdles = 4
+    num_hurdles = 5
     global hurdles
+    # min_dist = 100
     if not hurdles:
         # Generate random hurdle positions
         hurdles = [(np.random.randint(30, frame.shape[1] - 30), np.random.randint(30, frame.shape[0] - 30)) for _ in range(num_hurdles)]
@@ -64,7 +65,6 @@ def calculate_moments(contour):
     return M, (centroid_x, centroid_y)
 
 
-import numpy as np
 								   
 											  
 
@@ -123,6 +123,9 @@ cap = cv2.VideoCapture(0)
 				  				
 res = 'no'
 
+ret, frame = cap.read()
+generate_hurdles(frame)
+
 while 1:
     ret, frame = cap.read()
 		  					   
@@ -148,14 +151,18 @@ while 1:
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Generate random apple and hurdle positions if needed
-    generate_hurdles(frame)
 
     if apple_x is None or apple_y is None:
         # assigning random coefficients for apple coordinates
-        apple_x = np.random.randint(30, frame.shape[0] - 30)
-        apple_y = np.random.randint(100, 350)
-
-    cv2.circle(frame, (apple_x, apple_y), 3, (0, 0, 255), -1)
+        min_dist = 50
+        distance = 10
+        while distance <= min_dist:
+            apple_x = np.random.randint(30, frame.shape[0] - 30)
+            apple_y = np.random.randint(100, 350)
+            if all(np.sqrt((apple_x - hurdle[0])**2 + (apple_y - hurdle[1])**2) > min_dist for hurdle in hurdles):
+                break
+    cv2.circle(frame, (apple_x, apple_y), 6, (0, 0, 255), -1)
+    
 
     # Display hurdles
     for hurdle_pos in hurdles:
@@ -183,13 +190,13 @@ while 1:
         ball_cont = max(cnts, key=cv2.contourArea)
         (x, y), radius = cv2.minEnclosingCircle(ball_cont)
 
-        M, center = calculate_moments(ball_cont)
+        # M, center = calculate_moments(ball_cont)
         
-        #M = cv2.moments(ball_cont)
-        #center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+        M = cv2.moments(ball_cont)
+        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
 
         if radius > 10:
-            cv2.circle(frame, center, 2, (0, 0, 255), 3)
+            cv2.circle(frame, center, 4, (0, 0, 255), 4)
 
             if len(l) > list_capacity:
                 l = l[1:]
@@ -211,7 +218,7 @@ while 1:
             continue
         r, g, b = np.random.randint(0, 255, 3)
 
-        cv2.line(frame, l[i], l[i - 1], (int(r), int(g), int(b)), thickness=int(len(l) / max_lc + 2) + 2)
+        cv2.line(frame, l[i], l[i - 1], (int(r), int(g), int(b)), thickness=int(len(l) / max_lc + 2) + 6)
 
     cv2.putText(frame, 'Score :' + str(score), (450, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 203), 2)
     if flag == 1:
