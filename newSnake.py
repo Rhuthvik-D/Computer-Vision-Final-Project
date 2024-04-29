@@ -10,7 +10,7 @@ from tkinter import messagebox as mb
 # Snake game in Python
 
 score = 0
-max_score = 1
+max_score = 9
 list_capacity = 0
 max_lc = 20
 l = []
@@ -117,7 +117,7 @@ def gaussian_filter(sigma, filter_size):
     return kernel											 
 		
 # Load hurdle image
-hurdle_image = read_image('C:\\Users\\ASUS\\Desktop\\Study\\Sem 2\\CV\\FInal Project\\hurdle_image.png')  # Provide the path to your hurdle image
+hurdle_image = read_image('hurdle_image.png')  # Provide the path to your hurdle image
 
 cap = cv2.VideoCapture(0)
 				  				
@@ -168,7 +168,7 @@ while 1:
     greenUpper = (93, 255, 255)
 
     # masking out the green color
-    mask = cv2.inRange(img, greenLower, greenUpper)
+    mask = ((np.logical_and(np.all(img >= greenLower, axis = -1), np.all(img <= greenUpper, axis = -1))).astype(np.uint8))*255
     mask = erode(mask)
     #mask = cv2.erode(mask, None, iterations=2)
     # Dilate mask using custom function
