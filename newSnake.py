@@ -10,7 +10,7 @@ from tkinter import messagebox as mb
 # Snake game in Python
 
 score = 0
-max_score = 1
+max_score = 9
 list_capacity = 0
 max_lc = 20
 l = []
@@ -74,6 +74,16 @@ def erode(mask, kernel_size=(3,3), iterations=1):
     for _ in range(iterations):
         eroded_mask = np.minimum.reduce([eroded_mask[i:mask.shape[0]-kernel_size[0]+i+1, j:mask.shape[1]-kernel_size[1]+j+1] for i in range(kernel_size[0]) for j in range(kernel_size[1])])
     return eroded_mask
+
+# Function for dilation
+def dilate(mask, iterations=2):
+    dilated_mask = mask.copy()
+    for _ in range(iterations):
+        dilated_mask[1:-1, 1:-1] |= dilated_mask[:-2, 1:-1]
+        dilated_mask[1:-1, 1:-1] |= dilated_mask[2:, 1:-1]
+        dilated_mask[1:-1, 1:-1] |= dilated_mask[1:-1, :-2]
+        dilated_mask[1:-1, 1:-1] |= dilated_mask[1:-1, 2:]
+    return dilated_mask
 
 																						
 def convolution(f, I):
@@ -158,11 +168,12 @@ while 1:
     greenUpper = (93, 255, 255)
 
     # masking out the green color
-    mask = (np.logical_and(np.all(img >= greenLower, axis = -1), np.all(img <= greenUpper, axis = -1))).astype(np.uint8) * 255
-    # mask = cv2.inRange(img, greenLower, greenUpper)
+    mask = ((np.logical_and(np.all(img >= greenLower, axis = -1), np.all(img <= greenUpper, axis = -1))).astype(np.uint8))*255
     mask = erode(mask)
     #mask = cv2.erode(mask, None, iterations=2)
-    mask = cv2.dilate(mask, None, iterations=2)
+    # Dilate mask using custom function
+    mask = dilate(mask)
+    #mask = cv2.dilate(mask, None, iterations=2)
 
     # find contours
     cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
