@@ -218,10 +218,7 @@ while 1:
         cv2.putText(frame, 'YOU WIN !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 0), 3)
         cv2.imshow('live feed', frame)
         res = mb.askquestion('Exit Application', 'Retry?')       
-        if res == 'yes' : 
-							  
-					  
-			   
+        if res == 'yes' :
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -249,10 +246,7 @@ while 1:
         cv2.putText(frame, 'GAME OVER !!', (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3)
         cv2.imshow('live feed', frame)
         res = mb.askquestion('Exit Application', 'Retry?')       
-        if res == 'yes' : 
-							  
-					  
-			   
+        if res == 'yes' :
             score = 0
             list_capacity = 0
             max_lc = 20
@@ -264,10 +258,6 @@ while 1:
         else : 
             cv2.waitKey(1000) 
             break
-			   
-							  
-				 
-
     cv2.imshow('live feed', frame)
     cv2.imshow('mask', mask)
 
