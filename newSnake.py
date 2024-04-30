@@ -2,7 +2,7 @@ import cv2
 import imutils
 import numpy as np
 import math		   
-
+from PIL import Image
 import tkinter as tk 
 from tkinter import * 
 from tkinter import messagebox as mb 
@@ -21,11 +21,67 @@ center = None
 hurdles = []
 
 
+
 #Defining functions to read hurdle image
+'''yet to decide'''
 def read_image(path):
-    original_image = cv2.imread(path)
-    resized_image = cv2.resize(original_image, (20, 20))
-    return resized_image
+    original_image = cv2.imread('hurdle1.jpg', 1)
+    resized_image = cv2.resize(original_image, (30, 30))
+    blackandwht = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+    alpha, _, _ = otsu_threshold(blackandwht)
+    b, g, r = cv2.split(resized_image)
+    rgba = [b, g, r, alpha]
+    final_img = cv2.merge(rgba, 4)
+    final_img = cv2.cvtColor(final_img, cv2.COLOR_RGBA2RGB)
+    return final_img
+
+
+
+def otsu_threshold(im_in):
+    image_data = im_in.flatten()
+    bins = np.arange(0,100,1)
+
+    hist = {bin: 0 for bin in bins}
+    
+    for i in image_data:
+        for bin in bins:
+            if i <= bin:
+                hist[bin] +=1
+                break
+
+    hist_arr = np.array(list(hist.values()))
+    bins_arr = np.array(list(hist.keys()))
+
+    pdf = hist_arr / sum(hist_arr)
+
+    cdf = [sum(pdf[:i+1]) for i in range(len(pdf))]
+
+    cum_int = np.cumsum(np.arange(100) * pdf)
+    mu = {}
+
+    total_mean = cum_int[-1]
+    max_var, best_thresh = 0, 0
+    for thresh in range(1,100):
+        fore = cdf[thresh]
+        back = 1 - fore
+
+        if fore == 0 or back == 0:
+            continue
+        mean_fore = cum_int[thresh] / fore
+        mean_back = (total_mean - cum_int[thresh]) / back
+
+        mu_fb = fore * back * (mean_back - mean_fore)**2
+        mu[thresh] = mu_fb
+        if mu_fb > max_var:
+            max_var = mu_fb
+            best_thresh = thresh
+
+    thresh_image = np.zeros_like(im_in)
+    thresh_image[im_in > best_thresh] = 99
+
+    return thresh_image, best_thresh, mu
+
+
 
 
 # Define hurdle positions
@@ -119,6 +175,7 @@ def gaussian_filter(sigma, filter_size):
 # Load hurdle image
 hurdle_image = read_image('hurdle_image.png')  # Provide the path to your hurdle image
 
+
 cap = cv2.VideoCapture(0)
 				  				
 res = 'no'
@@ -190,13 +247,13 @@ while 1:
         ball_cont = max(cnts, key=cv2.contourArea)
         (x, y), radius = cv2.minEnclosingCircle(ball_cont)
 
-        # M, center = calculate_moments(ball_cont)
+        M, center = calculate_moments(ball_cont)
         
-        M = cv2.moments(ball_cont)
-        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+        # M = cv2.moments(ball_cont)
+        # center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
 
         if radius > 10:
-            cv2.circle(frame, center, 4, (0, 0, 255), 4)
+            cv2.circle(frame, center, 4, (0, 0, 255), -1)
 
             if len(l) > list_capacity:
                 l = l[1:]
